@@ -1,0 +1,19 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+coverage
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.context.json
+
+# Parcel default cache directory
+.parcel-cache
+
+# Local Sam Template (Generated at run and build time)
+/template.yaml
+
+# Packaged files
+/dist

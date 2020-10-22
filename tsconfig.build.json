@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "types": ["node"],
+    "lib": ["dom", "es2019", "es2020.string", "es2020.symbol.wellknown"],
+    "noImplicitAny": true,
+    "allowJs": false,
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*", "src/Types/*"]
+    },
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "bin",
+    "test",
+    "src/**/__mocks__",
+    "src/**/*.test.ts"
+  ]
+}
