@@ -6,9 +6,9 @@ import { ApiGatewayProxyExampleStack } from '../cdk/api-gateway-proxy-example-st
 const app = new cdk.App()
 
 new ApiGatewayProxyExampleStack(app, 'ApiGatewayProxyExampleStack', {
-  env: { region: 'eu-west-1', account: '507602307034' },
+  env: { region: 'eu-west-1' },
 })
 
 new ApiGatewayProxyExampleStack(app, 'ApiGatewayProxyExampleLocalStack', {
-  env: { region: 'eu-west-1', account: '507602307034' },
+  env: { region: 'eu-west-1' },
 })

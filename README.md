@@ -1,6 +1,18 @@
 # Api Gateway Proxy Example <!-- omit in toc -->
 
-> A CDK stack to demonstrate API gateway Proxy Integration (Lambda and HTTP)
+> A [CDK stack to demonstrate API gateway Proxy Integration](cdk/api-gateway-proxy-example-stack.ts) (Lambda and HTTP)
+
+It exposes two proxied Flickr endpoints (photos/recent and photos/search) which respond to GET requests, one proxied via a Lambda proxy integration at /photos/search which corresponds to
+[flickr.photos.search](https://www.flickr.com/services/api/flickr.photos.search.html) which returns the response in JSON format, and [flickr.photos.getRecent](https://www.flickr.com/services/api/flickr.photos.getrecent.html) which does the same thing, just via an API gateway HTTP integration, with no lambda.
+
+A basic custom lambda authorizer sits in front of the API Gateway. Api Keys etc are retrieved by cdk in [The Construct](cdk/api-gateway-proxy-example-stack.ts) and passed to the relevant Lambda's environment at deploy time.
+
+Use Cases:
+
+- Lambda: You want to proxy a third party api endpoint, but perform some computation between request/response.
+- HTTP: You want to proxy a third party api endpoint, and control the responses, map the output.
+
+Benefits of using HTTP over lambda are obviously not paying for lambda invocations, or dealing with cold starts.
 
 <!-- TOC -->
 
