@@ -71,7 +71,6 @@
   "dependencies": {
     "aws-lambda": "^1.0.6",
     "aws-sdk": "^2.772.0",
-    "flickr-sdk": "^3.9.0",
     "folktale": "^2.3.2",
     "node-fetch": "^2.6.1",
     "ramda": "^0.27.1",

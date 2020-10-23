@@ -92,13 +92,15 @@ export class ApiGatewayProxyExampleStack extends cdk.Stack {
 
     const flickrPhotosSearchLambda = new lambda.Function(
       this,
-      'flickrPhotoSearchLambda',
+      'FlickrPhotoSearchLambda',
       {
+        functionName: 'FlickrPhotoSearchLambda',
         runtime: lambda.Runtime.NODEJS_12_X,
         code: lambda.Code.fromAsset(path.join(__dirname, '..', 'dist')),
         handler: 'modules/flickr/handlers.searchPhotos',
         environment: {
           API_KEY: flickrApiKeyToken,
+          API_URL: 'https://www.flickr.com/services/rest',
         },
       },
     )

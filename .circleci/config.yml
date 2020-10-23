@@ -17,37 +17,37 @@ executors:
 
 commands:
   lint:
-    description: "lint"
+    description: 'lint'
     steps:
       - run:
-          name: "Lint"
+          name: 'Lint'
           command: npm run lint
   audit:
-    description: "Audit npm dependencies"
+    description: 'Audit npm dependencies'
     steps:
       - run:
-          name: "Audit npm dependencies"
+          name: 'Audit npm dependencies'
           command: npm run audit:critical
   test:
-    description: "run unit tests"
+    description: 'run unit tests'
     steps:
       - run:
-          name: "Run unit tests"
+          name: 'Run unit tests'
           command: npm run _test:ci
   build:
-    description: "build the application"
+    description: 'build the application'
     steps:
       - run:
           name: Build the application
           command: npm run build:package
   cdk-synth:
-    description: "synthesize cdk"
+    description: 'synthesize cdk'
     steps:
       - run:
           name: CDK synth
           command: npm run cdk:synth
   deploy-stack:
-    description: "deploy the stack"
+    description: 'deploy the stack'
     parameters:
       stage:
         type: string
@@ -80,18 +80,18 @@ jobs:
       - aws-cli/setup
       - cdk-synth
       - deploy-stack:
-          stage: "production"
+          stage: 'production'
 
 workflows:
   test-build-deploy:
     jobs:
       - test-build:
           context: dockerhub_credentials
-      - deploy-production-stack:
-          context: dockerhub_credentials
-          requires:
-            - test-build
-          filters:
-            branches:
-              only:
-                - master
+      # - deploy-production-stack:
+      #     context: dockerhub_credentials
+      #     requires:
+      #       - test-build
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master

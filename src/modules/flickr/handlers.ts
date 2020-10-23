@@ -1,20 +1,29 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import Flickr from "flickr-sdk";
-import { respond } from "../../common/utils";
-import config from "./config";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
+import fetch from 'node-fetch'
+import { respond } from '../../common/utils'
+import config from './config'
+import { constructSearchUri } from './utils'
+
 export const searchPhotos = async (
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const flickr = new Flickr(config.apiKey);
-    const results = await flickr.photos.search({
-      ...event.queryStringParameters,
-    });
-    return respond(200, results.body);
+    const uri = constructSearchUri(
+      config.apiUrl,
+      config.apiKey,
+      event.queryStringParameters,
+    )
+
+    const result = await fetch(uri, {
+      method: 'GET',
+    })
+
+    const json = await result.json()
+    return respond(result.status, json)
   } catch (error) {
-    console.log(error);
+    console.log('error:', error?.message)
     return respond(500, {
       error: error.message,
-    });
+    })
   }
-};
+}

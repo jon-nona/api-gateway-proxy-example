@@ -7,6 +7,7 @@
     "noImplicitAny": true,
     "allowJs": false,
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {

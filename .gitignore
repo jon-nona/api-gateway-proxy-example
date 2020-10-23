@@ -17,3 +17,6 @@ cdk.context.json
 
 # Packaged files
 /dist
+
+# environment for local lambda
+/environment.json

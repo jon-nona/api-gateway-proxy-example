@@ -30,6 +30,8 @@ If you run into issues, see the additional docs below \*\_[bottom of page](#Addi
 
 Several commands will require a working AWS CLI setup, and also that you have valid AWS_PROFILE and AWS_DEFAULT_REGION environment variables set for the AWS account you will be using. Be sure to do this before continuing.
 
+You should create an environment.json file from environment.json.tpl and add a valid Flickr api key.
+
 ## Testing
 
 We use Jest for testing. To run unit tests, you can use one of the following commands, to run once, run in watch mode, or to run all tests and generate converage reports.
