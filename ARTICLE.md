@@ -22,7 +22,7 @@ Before diving in to giving examples of how to implement these one has to decide 
 
 The non proxy integrations allow more control over transforming the request and responses at the Gateway level. The lambda integrations obviously come with a cost to each invocation, but allow additional computation to be performed.
 
-So with that in mind one shoudl ask yourself the following:
+So with that in mind one should ask yourself the following:
 
 1. Do I need to remap my request/response from my 3rd party API:
    1. Yes - Lambda Integration or Custom HTTP integration.
@@ -56,21 +56,15 @@ export class ApiGatewayProxyExampleStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: StackProps) {
     super(scope, id, props)
 
-    const apiKey = ssm.StringParameter.fromStringParameterAttributes(
+    const apiGatewayProxyExampleSecrets = secretsmanager.Secret.fromSecretName(
       this,
-      'ApiKey',
-      {
-        parameterName: '/api-gateway-proxy-example/api-key',
-      },
+      'ApiGatewayProxyExampleSecret',
+      'apiGateWayProxyExampleStack',
     )
 
-    const flickrApiKey = ssm.StringParameter.fromStringParameterAttributes(
-      this,
-      'FlickrApiKey',
-      {
-        parameterName: '/api-gateway-proxy-example/flickr-api-key',
-        version: 1,
-      },
+    const apiKey = apiGatewayProxyExampleSecrets.secretValueFromJson('apiKey')
+    const flickrApiKey = apiGatewayProxyExampleSecrets.secretValueFromJson(
+      'flickrApiKey',
     )
 
     const authorizerLambda = new lambda.Function(
@@ -80,7 +74,7 @@ export class ApiGatewayProxyExampleStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_12_X,
         code: lambda.Code.fromAsset(path.join(__dirname, '..', 'dist')),
         environment: {
-          API_TOKEN: apiKey.stringValue,
+          API_TOKEN: `${apiKey}`,
         },
         handler: 'authorizers/authorizer.handler',
       },
@@ -112,7 +106,7 @@ export class ApiGatewayProxyExampleStack extends cdk.Stack {
         code: lambda.Code.fromAsset(path.join(__dirname, '..', 'dist')),
         handler: 'modules/flickr/handlers.searchPhotos',
         environment: {
-          API_KEY: flickrApiKey.stringValue,
+          API_KEY: `${flickrApiKey}`,
           API_URL: 'https://www.flickr.com/services/rest',
         },
       },
@@ -126,7 +120,7 @@ export class ApiGatewayProxyExampleStack extends cdk.Stack {
         connectionType: apigateway.ConnectionType.INTERNET,
         integrationResponses,
         requestParameters: {
-          'integration.request.querystring.api_key': `'${flickrApiKey.stringValue}'`,
+          'integration.request.querystring.api_key': `'${flickrApiKey}'`,
           'integration.request.querystring.format': `'json'`,
           'integration.request.querystring.nojsoncallback': `'1'`,
           'integration.request.querystring.method': `'flickr.photos.getRecent'`,
@@ -165,28 +159,20 @@ export class ApiGatewayProxyExampleStack extends cdk.Stack {
 
 #### Paramstore
 
-First in the above file, we reference a couple of parameters that we have already created in [AWS Systems Manager Param Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html), namely a temporary API key that we are using with a barebones custom Lambda authorizer, and then our Flickr Api key.
+First in the above file, we reference a couple of parameters that we have already created in [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), namely a temporary API key that we are using with a barebones custom Lambda authorizer, and then our Flickr Api key. These, for convenience sake we store in one JSON object, and then retrieve them.
 
-Note that we are not using secure string parameters here as [We cannot retrieve the value of a secure string](https://docs.aws.amazon.com/cdk/latest/guide/get_ssm_value.html) at this time in our CDK template.
-
-> Only plain Systems Manager strings may be retrieved, not secure strings. It is not possible to request a specific version; the latest version is always returned.
+We can then reference these in our stack definition, and CDK will resolve the values at deploy time for us, and, in the Lambda's case, pass them in as environment variables.
 
 ```Typescript
-const apiKey = ssm.StringParameter.fromStringParameterAttributes(
+const apiGatewayProxyExampleSecrets = secretsmanager.Secret.fromSecretName(
       this,
-      'ApiKey',
-      {
-        parameterName: '/api-gateway-proxy-example/api-key',
-      },
+      'ApiGatewayProxyExampleSecret',
+      'apiGateWayProxyExampleStack',
     )
 
-    const flickrApiKey = ssm.StringParameter.fromStringParameterAttributes(
-      this,
-      'FlickrApiKey',
-      {
-        parameterName: '/api-gateway-proxy-example/flickr-api-key',
-        version: 1,
-      },
+const apiKey = apiGatewayProxyExampleSecrets.secretValueFromJson('apiKey')
+const flickrApiKey = apiGatewayProxyExampleSecrets.secretValueFromJson(
+'flickrApiKey',
     )
 ```
 
@@ -209,7 +195,7 @@ const api = new apigateway.RestApi(this, `ApiGatewayProxyExampleApi`, {
 
 We're going to proxy the Flickr photos search endpoint with a Lambda integration.
 
-First, we define a Lambda function (flickrPhotosSearchLambda) in our CDK construct, and pass it as environment variables the Flickr REST API endpoint and our Flickr API Key (Note that if you did want to store the Api Key as a Secure String, you could retrieve this from paramstore in the lambda but that for now we will pass it in this way).
+First, we define a Lambda function (flickrPhotosSearchLambda) in our CDK construct, and pass it as environment variables the Flickr REST API endpoint and our Flickr API Key.
 
 ```Typescript
 const flickrPhotosSearchLambda = new lambda.Function(
@@ -221,14 +207,14 @@ const flickrPhotosSearchLambda = new lambda.Function(
         code: lambda.Code.fromAsset(path.join(__dirname, '..', 'dist')),
         handler: 'modules/flickr/handlers.searchPhotos',
         environment: {
-          API_KEY: flickrApiKey.stringValue,
+          API_KEY: `${flickrApiKey}`,
           API_URL: 'https://www.flickr.com/services/rest',
         },
       },
     )
 ```
 
-Then, to add the /photos/search endpoint to our Api we write the following
+Then, to add the /photos/search endpoint to our Api we write the following:
 
 ```Typescript
 const photos = api.root.addResource('photos')
@@ -425,7 +411,7 @@ const flickrRecentPhotosIntegration = new apigateway.Integration({
         connectionType: apigateway.ConnectionType.INTERNET,
         integrationResponses,
         requestParameters: {
-          'integration.request.querystring.api_key': `'${flickrApiKey.stringValue}'`,
+          'integration.request.querystring.api_key': `'${flickrApiKey}'`,
           'integration.request.querystring.format': `'json'`,
           'integration.request.querystring.nojsoncallback': `'1'`,
           'integration.request.querystring.method': `'flickr.photos.getRecent'`,
